@@ -1,0 +1,26 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Категории{% endblock %}
+
+{% block content %}
+    <h1>Категории товаров</h1>
+
+    {% if categories %}
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            <p class="card-text">Товаров: {{ category.products.count() }}</p>
+                            <a href="{{ url_for('catalog.category_detail', category_slug=category.slug) }}" 
+                               class="btn btn-primary">Смотреть товары</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Категорий пока нет</div>
+    {% endif %}
+{% endblock %}

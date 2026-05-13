@@ -1,0 +1,29 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Бренды{% endblock %}
+
+{% block content %}
+    <h1>Бренды</h1>
+
+    {% if brands %}
+        <div class="row">
+            {% for brand in brands %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ brand.name }}</h5>
+                            {% if brand.country %}
+                                <p class="card-text">Страна: {{ brand.country }}</p>
+                            {% endif %}
+                            <p class="card-text">Товаров: {{ brand.products.count() }}</p>
+                            <a href="{{ url_for('catalog.brand_detail', brand_slug=brand.slug) }}" 
+                               class="btn btn-primary">Смотреть товары</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Брендов пока нет</div>
+    {% endif %}
+{% endblock %}

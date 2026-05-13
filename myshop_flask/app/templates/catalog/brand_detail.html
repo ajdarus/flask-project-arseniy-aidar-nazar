@@ -1,0 +1,103 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ brand.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ brand.name }}</h1>
+    
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('catalog.product_list') }}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('catalog.brand_list') }}">Бренды</a></li>
+            <li class="breadcrumb-item active">{{ brand.name }}</li>
+        </ol>
+    </nav>
+
+    {% if brand.country %}
+        <p>Страна: {{ brand.country }}</p>
+    {% endif %}
+    {% if brand.description %}
+        <p>{{ brand.description }}</p>
+    {% endif %}
+
+    <!-- Поиск внутри бренда -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Поиск в бренде..." value="{{ search_query }}">
+                        <button class="btn btn-primary" type="submit">Найти</button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    {% if search_query %}
+                        <a href="{{ url_for('catalog.brand_detail', brand_slug=brand.slug) }}" 
+                           class="btn btn-outline-secondary w-100">Сбросить</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if page_obj.items %}
+        <div class="row">
+            {% for product in page_obj.items %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            {% if product.picture %}
+                                <img src="{{ url_for('static', filename='uploads/products/' + product.picture) }}" 
+                                     class="img-fluid mb-2" alt="{{ product.name }}">
+                            {% endif %}
+                            <p class="card-text text-primary fw-bold">{{ product.price }} ₽</p>
+                            <a href="{{ url_for('catalog.product_detail', product_id=product.id) }}" 
+                               class="btn btn-sm btn-outline-primary">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.prev_num }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            &laquo; Предыдущая
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if num %}
+                        <li class="page-item {% if page_obj.page == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_num }}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            Следующая &raquo;
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% else %}
+        <div class="alert alert-warning">
+            {% if search_query %}
+                Ничего не найдено по запросу "{{ search_query }}"
+            {% else %}
+                У этого бренда пока нет товаров
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

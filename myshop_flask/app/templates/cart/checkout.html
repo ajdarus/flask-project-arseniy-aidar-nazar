@@ -1,0 +1,94 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+<h2>Оформление заказа</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Ваши товары</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for item in items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ item.product.name }} x {{ item.quantity }} шт.
+                            <span class="badge bg-primary rounded-pill">{{ (item.product.price * item.quantity)|round(2) }} ₽</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <hr>
+                <h5 class="text-end">Общая сумма: <strong>{{ total_price|round(2) }} ₽</strong></h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4>Контактные данные</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">Имя:</label>
+                        {{ form.first_name(class="form-control", id="first_name") }}
+                        {% for error in form.first_name.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Фамилия:</label>
+                        {{ form.last_name(class="form-control", id="last_name") }}
+                        {% for error in form.last_name.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email:</label>
+                        {{ form.email(class="form-control", id="email") }}
+                        {% for error in form.email.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Телефон:</label>
+                        {{ form.phone(class="form-control", id="phone") }}
+                        {% for error in form.phone.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Адрес доставки:</label>
+                        {{ form.address(class="form-control", id="address", rows="3") }}
+                        {% for error in form.address.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Подтвердить заказ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{{ url_for('cart.cart_detail') }}" class="btn btn-secondary mt-3">← Вернуться в корзину</a>
+{% endblock %}

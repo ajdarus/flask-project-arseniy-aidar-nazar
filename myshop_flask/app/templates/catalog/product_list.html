@@ -1,0 +1,148 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+    <h1>Наш магазин</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('catalog.product_list') }}" class="row g-3">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <input type="text"
+                               name="q"
+                               class="form-control"
+                               placeholder="Поиск товаров..."
+                               value="{{ search_query }}">
+                        {% if request.args.get('category') %}
+                            <input type="hidden" name="category" value="{{ request.args.get('category') }}">
+                        {% endif %}
+                        <button class="btn btn-primary" type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                            Найти
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    {% if search_query %}
+                        <a href="{{ url_for('catalog.product_list') }}" class="btn btn-outline-secondary w-100">Сбросить</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="category-filter mb-4">
+        <strong>Категории:</strong>
+        <a href="{{ url_for('catalog.product_list') }}{% if search_query %}?q={{ search_query }}{% endif %}"
+           class="btn btn-sm {% if not request.args.get('category') %}btn-primary{% else %}btn-outline-primary{% endif %}">
+            Все
+        </a>
+        {% for category in categories %}
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}category={{ category.slug }}"
+               class="btn btn-sm {% if request.args.get('category') == category.slug %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    {% if search_query %}
+        <div class="alert alert-info">
+            <strong>Результаты поиска:</strong> "{{ search_query }}"
+            <span class="badge bg-secondary">Найдено: {{ page_obj.total }}</span>
+        </div>
+    {% endif %}
+
+    {% if page_obj.items %}
+        <div class="row">
+            {% for product in page_obj.items %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            {% if product.category %}
+                                <span class="badge bg-info mb-2">{{ product.category.name }}</span>
+                            {% endif %}
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            {% if product.picture %}
+                                <img src="{{ url_for('static', filename='uploads/products/' + product.picture) }}" class="img-fluid mb-2" alt="{{ product.name }}">
+                            {% else %}
+                                <div class="bg-light text-center p-3 mb-2">Нет фото</div>
+                            {% endif %}
+                            <p class="card-text text-primary fw-bold">{{ product.price }} ₽</p>
+                            <p class="card-text small">{{ product.description|truncate(100) }}</p>
+                            <p class="card-text"><small class="text-muted">Добавлено: {{ product.created_at.strftime('%d.%m.%Y') }}</small></p>
+                            <a href="{{ url_for('catalog.product_detail', product_id=product.id) }}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if request.args.get('category') %}category={{ request.args.get('category') }}&{% endif %}page={{ page_obj.prev_num }}">
+                            &laquo; Предыдущая
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo; Предыдущая</span>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if num %}
+                        {% if page_obj.page == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if request.args.get('category') %}category={{ request.args.get('category') }}&{% endif %}page={{ num }}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if request.args.get('category') %}category={{ request.args.get('category') }}&{% endif %}page={{ page_obj.next_num }}">
+                            Следующая &raquo;
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Следующая &raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <div class="text-center text-muted mt-2">
+            Страница {{ page_obj.page }} из {{ page_obj.pages }}
+            (Всего товаров: {{ page_obj.total }})
+        </div>
+
+    {% else %}
+        <div class="alert alert-warning text-center">
+            {% if search_query %}
+                <h3>Ничего не найдено</h3>
+                <p>По запросу "{{ search_query }}" товаров не найдено.</p>
+                <p>Попробуйте изменить поисковый запрос.</p>
+            {% else %}
+                <h3>Товаров пока нет</h3>
+                <p>Загляните позже</p>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

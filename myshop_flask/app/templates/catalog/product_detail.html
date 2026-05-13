@@ -1,0 +1,60 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('catalog.product_list') }}">Главная</a></li>
+            {% if product.category %}
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('catalog.category_detail', category_slug=product.category.slug) }}">
+                        {{ product.category.name }}
+                    </a>
+                </li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.picture %}
+                <img src="{{ url_for('static', filename='uploads/products/' + product.picture) }}" 
+                     class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+                <div class="bg-light text-center p-5 rounded">Нет изображения</div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1>{{ product.name }}</h1>
+            <p class="text-primary fs-3 fw-bold">{{ product.price }} ₽</p>
+            
+            {% if product.brand %}
+                <p>Бренд: 
+                    <a href="{{ url_for('catalog.brand_detail', brand_slug=product.brand.slug) }}">
+                        {{ product.brand.name }}
+                    </a>
+                </p>
+            {% endif %}
+            
+            {% if product.category %}
+                <p>Категория: 
+                    <a href="{{ url_for('catalog.category_detail', category_slug=product.category.slug) }}">
+                        {{ product.category.name }}
+                    </a>
+                </p>
+            {% endif %}
+
+            <hr>
+            
+            <h5>Описание</h5>
+            <p>{{ product.description }}</p>
+            
+            <p class="text-muted">Добавлено: {{ product.created_at.strftime('%d.%m.%Y') }}</p>
+
+            <!-- Кнопка "В корзину" пока не работает, позже подключим -->
+            <a href="{{ url_for('cart.add_to_cart', product_id=product.id) }}" class="btn btn-success btn-lg">В корзину</a>
+        </div>
+    </div>
+{% endblock %}
